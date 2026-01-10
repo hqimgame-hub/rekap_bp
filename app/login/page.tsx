@@ -1,5 +1,7 @@
 'use client';
 
+
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -44,8 +46,11 @@ export default function LoginPage() {
         <div className={styles.container}>
             <Card className={styles.loginCard}>
                 <div className={styles.header}>
+                    <div className={styles.logoContainer}>
+                        <img src="/logo.png" alt="Logo SMPN 32 SBY" className={styles.logo} />
+                    </div>
                     <h1 className={styles.title}>Rekap Budaya Positif</h1>
-                    <p className={styles.subtitle}>Masuk untuk mengelola data sekolah</p>
+                    <p className={styles.subtitle}>SMP Negeri 32 Surabaya</p>
                 </div>
 
                 <form onSubmit={handleLogin} className={styles.form}>

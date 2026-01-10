@@ -12,12 +12,14 @@ import {
     LogOut,
     Menu,
     X,
-    FileText
+    FileText,
+    Settings,
+    UserCog
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import styles from './Sidebar.module.css';
 
-type Role = 'admin' | 'kepsek' | 'walas' | 'petugas';
+type Role = 'admin' | 'kepsek' | 'walas' | 'petugas_input' | 'petugas_scan' | 'petugas';
 
 interface SidebarProps {
     role: Role;
@@ -41,13 +43,13 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
             label: 'Dashboard',
             href: '/dashboard',
             icon: LayoutDashboard,
-            roles: ['admin', 'kepsek', 'walas', 'petugas']
+            roles: ['admin', 'kepsek', 'walas', 'petugas_input', 'petugas_scan', 'petugas']
         },
         {
             label: 'Data Kelas',
             href: '/dashboard/classes',
             icon: GraduationCap,
-            roles: ['admin', 'walas']
+            roles: ['admin']
         },
         {
             label: 'Data Siswa',
@@ -62,16 +64,34 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
             roles: ['admin']
         },
         {
+            label: 'Catat Poin',
+            href: '/dashboard/records',
+            icon: ClipboardList,
+            roles: ['admin', 'petugas_input', 'kepsek']
+        },
+        {
             label: 'Scan QR',
             href: '/dashboard/scan',
             icon: QrCode,
-            roles: ['admin', 'petugas']
+            roles: ['admin', 'petugas_scan', 'petugas']
         },
         {
             label: 'Rekap & Laporan',
             href: '/dashboard/reports',
             icon: FileText,
             roles: ['admin', 'kepsek', 'walas']
+        },
+        {
+            label: 'Manajemen Pengguna',
+            href: '/dashboard/users',
+            icon: UserCog,
+            roles: ['admin']
+        },
+        {
+            label: 'Pengaturan Sekolah',
+            href: '/dashboard/settings',
+            icon: Settings,
+            roles: ['admin']
         }
     ];
 
@@ -90,13 +110,16 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
             <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
                 <div className={styles.header}>
                     <div className={styles.logo}>Budaya Positif</div>
+                    <div className={styles.schoolName}>SMPN 32 SBY</div>
                     <div className={styles.roleBadge}>{role.toUpperCase()}</div>
                 </div>
 
                 <nav className={styles.nav}>
                     {filteredMenu.map((item) => {
                         const Icon = item.icon;
-                        const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                        const isActive = item.href === '/dashboard'
+                            ? pathname === '/dashboard'
+                            : pathname === item.href || pathname.startsWith(`${item.href}/`);
                         return (
                             <Link
                                 key={item.href}
@@ -119,6 +142,9 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
                         <LogOut size={20} />
                         <span>Keluar</span>
                     </button>
+                    <div className={styles.copyright}>
+                        © 2026 SMPN 32 SBY
+                    </div>
                 </div>
             </aside>
 

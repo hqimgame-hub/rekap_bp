@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
-    role TEXT NOT NULL CHECK (role IN ('admin', 'kepsek', 'walas', 'petugas')),
+    role TEXT NOT NULL CHECK (role IN ('admin', 'kepsek', 'walas', 'petugas', 'petugas_input', 'petugas_scan')),
     class_id UUID, -- Nullable, used for Walas
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -29,6 +29,7 @@ CREATE TABLE students (
     name TEXT NOT NULL,
     class_id UUID REFERENCES classes(id) ON DELETE CASCADE,
     active BOOLEAN DEFAULT TRUE,
+    gender TEXT CHECK (gender IN ('L', 'P')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -80,6 +81,14 @@ CREATE TABLE qr_logs (
     scan_time TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 9. SETTINGS (General Application Settings)
+CREATE TABLE settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    description TEXT,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- INDEXES for Performance
 CREATE INDEX idx_records_student_id ON records(student_id);
 CREATE INDEX idx_records_class_id ON records(class_id);
@@ -95,6 +104,7 @@ ALTER TABLE aspect_rules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE qr_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE qr_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
 
 -- Helper function to get current user role
 CREATE OR REPLACE FUNCTION get_my_role()
@@ -133,7 +143,7 @@ CREATE POLICY "Others view classes" ON classes FOR SELECT USING (auth.uid() IS N
 -- STUDENTS
 -- Admin full access. Kepsek & Petugas Read All. Walas Read Own Class.
 CREATE POLICY "Admin manage students" ON students FOR ALL USING (get_my_role() = 'admin');
-CREATE POLICY "Kepsek Petugas read all students" ON students FOR SELECT USING (get_my_role() IN ('kepsek', 'petugas'));
+CREATE POLICY "Kepsek Petugas read all students" ON students FOR SELECT USING (get_my_role() IN ('kepsek', 'petugas_input', 'petugas_scan', 'petugas'));
 CREATE POLICY "Walas read own class students" ON students FOR SELECT USING (class_id = get_my_class_id() OR get_my_role() = 'walas'); -- Note: Logic simplified, refine if needed
 
 -- ASPECTS & RULES
@@ -156,12 +166,16 @@ CREATE POLICY "Walas read class records" ON records FOR SELECT USING (
 );
 
 -- Petugas: Insert Only (and maybe read what they inserted?)
-CREATE POLICY "Petugas insert records" ON records FOR INSERT WITH CHECK (get_my_role() IN ('petugas', 'admin'));
-CREATE POLICY "Petugas read own inputs" ON records FOR SELECT USING (input_by = auth.uid());
+CREATE POLICY "Petugas insert records" ON records FOR INSERT WITH CHECK (get_my_role() IN ('petugas_input', 'petugas_scan', 'admin', 'petugas'));
+CREATE POLICY "Petugas read own inputs" ON records FOR SELECT USING (input_by = auth.uid() OR get_my_role() IN ('petugas_input', 'petugas_scan'));
 
 -- QR SESSIONS
-CREATE POLICY "Admin Petugas manage qr" ON qr_sessions FOR ALL USING (get_my_role() IN ('admin', 'petugas'));
+CREATE POLICY "Admin Petugas manage qr" ON qr_sessions FOR ALL USING (get_my_role() IN ('admin', 'petugas_scan', 'petugas'));
 CREATE POLICY "Others view active qr" ON qr_sessions FOR SELECT USING (active = true);
 
 -- QR LOGS
-CREATE POLICY "Admin Petugas manage logs" ON qr_logs FOR ALL USING (get_my_role() IN ('admin', 'petugas'));
+CREATE POLICY "Admin Petugas manage logs" ON qr_logs FOR ALL USING (get_my_role() IN ('admin', 'petugas_scan', 'petugas'));
+
+-- SETTINGS
+CREATE POLICY "Admin manage settings" ON settings FOR ALL USING (get_my_role() = 'admin');
+CREATE POLICY "Others read settings" ON settings FOR SELECT USING (auth.uid() IS NOT NULL);

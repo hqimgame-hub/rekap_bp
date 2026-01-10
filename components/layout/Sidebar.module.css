@@ -48,7 +48,14 @@
     font-weight: 700;
     font-size: 1.25rem;
     color: var(--primary-color);
-    margin-bottom: 4px;
+    margin-bottom: 2px;
+}
+
+.schoolName {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
 }
 
 .roleBadge {
@@ -129,6 +136,14 @@
 
 .logoutBtn:hover {
     background-color: #fee2e2;
+}
+
+.copyright {
+    margin-top: 12px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-align: center;
+    opacity: 0.7;
 }
 
 /* Responsive */

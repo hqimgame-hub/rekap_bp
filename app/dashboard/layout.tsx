@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { Topbar } from '@/components/layout/Topbar';
 import styles from './layout.module.css';
 
 export default async function DashboardLayout({
@@ -9,15 +10,18 @@ export default async function DashboardLayout({
     children: React.ReactNode;
 }) {
     const supabase = await createClient();
+    console.log('[DashboardLayout] Starting layout...');
 
     const {
         data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
+        console.log('[DashboardLayout] No user, redirecting to login');
         redirect('/login');
     }
 
+    console.log('[DashboardLayout] Fetching profile for user:', user.id);
     // Fetch Profile to get role
     const { data: profile } = await supabase
         .from('profiles')
@@ -25,19 +29,31 @@ export default async function DashboardLayout({
         .eq('id', user.id)
         .single();
 
-    // If no profile, they might need to complete registration or contact admin.
-    // For now, we assume profile exists or redirect to a 'profile-setup' page (not yet implemented)
+    console.log('[DashboardLayout] Profile fetched:', profile?.role);
+
+    const role = (profile?.role as any) || 'petugas_input';
+
     if (!profile) {
-        // Fallback or error page
-        // redirect('/setup-profile'); 
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <div className="text-center">
+                    <h2 className="text-xl font-bold">Profil Tidak Ditemukan</h2>
+                    <p className="text-slate-600">Hubungi Admin untuk aktivasi akun Anda.</p>
+                </div>
+            </div>
+        );
     }
 
-    const role = profile?.role || 'user'; // Default unsafe, but caught by logic
+    const isPetugas = role === 'petugas_input' || role === 'petugas_scan' || role === 'petugas';
 
     return (
-        <div className={styles.layout}>
-            <Sidebar role={role} userEmail={user.email || ''} />
-            <main className={styles.main}>
+        <div className={isPetugas ? styles.layoutColumn : styles.layout}>
+            {isPetugas ? (
+                <Topbar role={role} userEmail={user.email || ''} />
+            ) : (
+                <Sidebar role={role} userEmail={user.email || ''} />
+            )}
+            <main className={isPetugas ? styles.mainFull : styles.main}>
                 <div className={styles.content}>
                     {children}
                 </div>

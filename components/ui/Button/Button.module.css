@@ -21,6 +21,7 @@
   background-color: var(--primary-color, #0070f3);
   color: white;
 }
+
 .primary:hover:not(:disabled) {
   background-color: var(--primary-hover, #005bb5);
 }
@@ -29,6 +30,7 @@
   background-color: var(--secondary-color, #eaeaea);
   color: var(--text-color, #333);
 }
+
 .secondary:hover:not(:disabled) {
   background-color: #ddd;
 }
@@ -38,12 +40,46 @@
   color: white;
 }
 
+.success {
+  background-color: #10b981;
+  /* Emerald 500 */
+  color: white;
+}
+
+.success:hover:not(:disabled) {
+  background-color: #059669;
+  /* Emerald 600 */
+}
+
+.warning {
+  background-color: #f59e0b;
+  /* Amber 500 */
+  color: white;
+}
+
+.warning:hover:not(:disabled) {
+  background-color: #d97706;
+  /* Amber 600 */
+}
+
 .ghost {
   background-color: transparent;
   color: var(--primary-color, #0070f3);
 }
+
 .ghost:hover:not(:disabled) {
   background-color: rgba(0, 112, 243, 0.1);
+}
+
+.outline {
+  background-color: transparent;
+  border: 1px solid var(--primary-color, #0070f3);
+  color: var(--primary-color, #0070f3);
+}
+
+.outline:hover:not(:disabled) {
+  background-color: var(--primary-color, #0070f3);
+  color: white;
 }
 
 /* Sizes */
@@ -74,5 +110,7 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
