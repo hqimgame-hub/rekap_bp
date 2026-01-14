@@ -127,7 +127,7 @@ export async function recordFromQR(token: string, aspectId?: string, ruleId?: st
     return {
         success: true,
         studentName: student.name,
-        className: student.class?.name || 'Kelas ?', // Added className
+        className: (student.class as any)?.name || 'Kelas ?', // Added className
         arrivalTime: currentTime,
         isLate,
         lateMinutes,
@@ -260,7 +260,7 @@ export async function recordManualAttendance(studentId: string, arrivalTime: str
     return {
         success: true,
         studentName: student.name,
-        className: student.class?.name || 'Kelas ?', // Added className
+        className: (student.class as any)?.name || 'Kelas ?', // Added className
         arrivalTime: arrivalTime,
         isLate,
         lateMinutes,

@@ -340,7 +340,7 @@ export default function ScanManager({ aspects, classes, role }: ScanManagerProps
                     type="submit"
                     isLoading={isLoading}
                     disabled={!manualToken || (!isAutoMode && (!selectedAspectId || !selectedRuleId))}
-                    variant="slate"
+                    variant="primary"
                 >
                     Simpan
                 </Button>
