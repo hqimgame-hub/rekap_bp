@@ -2,7 +2,19 @@
 
 import { createClient } from '@/lib/supabase/server';
 
-export async function getDashboardStats() {
+export interface DashboardStats {
+    totalStudents: number;
+    totalClasses: number;
+    pointsToday: number;
+    negativePointsToday: number;
+    topClassesPositive?: { name: string; points: number }[];
+    topClassesNegative?: { name: string; points: number }[];
+    violationByAspect?: { name: string; points: number }[];
+    topStudentsPositive?: { name: string; points: number }[];
+    topStudentsNegative?: { name: string; points: number }[];
+}
+
+export async function getDashboardStats(): Promise<DashboardStats | null> {
     const supabase = await createClient();
 
     // Get current user role
@@ -19,7 +31,7 @@ export async function getDashboardStats() {
     const classId = profile?.class_id;
 
     // Fetch stats based on role
-    let stats = {
+    let stats: DashboardStats = {
         totalStudents: 0,
         totalClasses: 0,
         pointsToday: 0,
@@ -70,11 +82,11 @@ export async function getDashboardStats() {
             const sortedClasses = Array.from(classMap.entries())
                 .map(([name, points]) => ({ name, points }));
 
-            (stats as any).topClassesPositive = [...sortedClasses]
+            stats.topClassesPositive = [...sortedClasses]
                 .sort((a, b) => b.points - a.points)
                 .slice(0, 5);
 
-            (stats as any).topClassesNegative = [...sortedClasses]
+            stats.topClassesNegative = [...sortedClasses]
                 .sort((a, b) => a.points - b.points)
                 .slice(0, 5);
         }
@@ -92,7 +104,7 @@ export async function getDashboardStats() {
                 const name = r.aspect?.name || 'Unknown';
                 aspectMap.set(name, (aspectMap.get(name) || 0) + Math.abs(r.point));
             });
-            (stats as any).violationByAspect = Array.from(aspectMap.entries())
+            stats.violationByAspect = Array.from(aspectMap.entries())
                 .map(([name, points]) => ({ name, points }))
                 .sort((a, b) => b.points - a.points);
         }
@@ -112,12 +124,12 @@ export async function getDashboardStats() {
             const sortedStudents = Array.from(studentMap.entries())
                 .map(([name, points]) => ({ name, points }));
 
-            (stats as any).topStudentsPositive = sortedStudents
+            stats.topStudentsPositive = sortedStudents
                 .filter(s => s.points > 0)
                 .sort((a, b) => b.points - a.points)
                 .slice(0, 5);
 
-            (stats as any).topStudentsNegative = sortedStudents
+            stats.topStudentsNegative = sortedStudents
                 .filter(s => s.points < 0)
                 .sort((a, b) => a.points - b.points) // Most negative first
                 .slice(0, 5);
@@ -138,7 +150,7 @@ export async function getDashboardStats() {
             const name = r.aspect?.name || 'Unknown';
             aspectMap.set(name, (aspectMap.get(name) || 0) + Math.abs(r.point));
         });
-        (stats as any).violationByAspect = Array.from(aspectMap.entries())
+        stats.violationByAspect = Array.from(aspectMap.entries())
             .map(([name, points]) => ({ name, points }))
             .sort((a, b) => b.points - a.points)
             .slice(0, 5);
@@ -155,7 +167,7 @@ export async function getDashboardStats() {
             const name = r.student?.name || 'Unknown';
             studentMap.set(name, (studentMap.get(name) || 0) + Math.abs(r.point));
         });
-        (stats as any).topStudentsNegative = Array.from(studentMap.entries())
+        stats.topStudentsNegative = Array.from(studentMap.entries())
             .map(([name, points]) => ({ name, points }))
             .sort((a, b) => b.points - a.points)
             .slice(0, 5);

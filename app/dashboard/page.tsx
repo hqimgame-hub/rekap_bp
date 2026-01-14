@@ -70,7 +70,7 @@ export default async function DashboardPage() {
                             📊 Top Pelanggaran di Kelas
                         </h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            {stats?.violationByAspect?.length > 0 ? (
+                            {stats?.violationByAspect && stats.violationByAspect.length > 0 ? (
                                 stats.violationByAspect.map((item: any, i: number) => (
                                     <div key={i}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '0.8125rem' }}>
@@ -99,7 +99,7 @@ export default async function DashboardPage() {
                             ⚠️ Siswa dengan Pelanggaran Terbanyak
                         </h3>
                         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                            {stats?.topStudentsNegative?.length > 0 ? (
+                            {stats?.topStudentsNegative && stats.topStudentsNegative.length > 0 ? (
                                 stats.topStudentsNegative.map((item: any, i: number) => (
                                     <li key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: i < 4 ? '1px solid #f8fafc' : 'none' }}>
                                         <span style={{ fontWeight: '600', color: '#475569', fontSize: '0.875rem' }}>{item.name}</span>
