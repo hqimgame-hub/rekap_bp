@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { AdminDashboard } from '@/components/dashboard/AdminDashboard';
 import { Card } from '@/components/ui/Card';
 import { getDashboardStats } from './actions';
-import ClientRedirect from '@/components/ui/ClientRedirect';
+import { redirect } from 'next/navigation';
 
 export default async function DashboardPage() {
     const supabase = await createClient();
@@ -23,12 +23,12 @@ export default async function DashboardPage() {
     console.log('[DashboardPage] User:', user.id, 'Role:', role);
 
     if (role === 'petugas' || role === 'petugas_scan') {
-        console.log('[DashboardPage] Render ClientRedirect to /dashboard/scan');
-        return <ClientRedirect to="/dashboard/scan" />;
+        console.log('[DashboardPage] Server redirect to /dashboard/scan');
+        redirect('/dashboard/scan');
     }
 
     if (role === 'petugas_input') {
-        return <ClientRedirect to="/dashboard/records" />;
+        redirect('/dashboard/records');
     }
 
     const stats = await getDashboardStats();

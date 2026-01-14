@@ -42,3 +42,64 @@ export async function updateAllSettings(settings: Record<string, string>) {
     revalidatePath('/dashboard/settings');
     return { success: true };
 }
+
+export async function deleteData(
+    type: 'all' | 'attendance' | 'violations',
+    startDate?: string,
+    endDate?: string
+) {
+    const supabase = await createClient();
+
+    // Check if user is authorized (Double check)
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Unauthenticated');
+
+    // Check role just in case
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin' && profile?.role !== 'kepsek') {
+        throw new Error('Unauthorized: Only Admin or Kepsek can delete data');
+    }
+
+    // Get 'Kehadiran' aspect ID
+    const { data: aspect } = await supabase
+        .from('aspects')
+        .select('id')
+        .eq('name', 'Kehadiran')
+        .single();
+
+    const attendanceAspectId = aspect?.id;
+
+    let query = supabase.from('records').delete();
+
+    // 1. Filter by Type
+    if (type === 'attendance') {
+        if (!attendanceAspectId) throw new Error('Aspect "Kehadiran" not found');
+        query = query.eq('aspect_id', attendanceAspectId);
+    } else if (type === 'violations') {
+        if (attendanceAspectId) {
+            query = query.neq('aspect_id', attendanceAspectId);
+        }
+    }
+    // if 'all', we don't filter by aspect_id
+
+    // 2. Filter by Date
+    if (startDate) {
+        query = query.gte('input_date', startDate);
+    }
+    if (endDate) {
+        query = query.lte('input_date', endDate);
+    }
+
+    // Execute
+    const { error, count } = await query;
+
+    if (error) throw new Error(error.message);
+
+    revalidatePath('/dashboard');
+    return { success: true, count };
+}

@@ -1,0 +1,193 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 1rem;
+    animation: fadeIn 0.2s ease-out;
+    backdrop-filter: blur(4px);
+}
+
+.modal {
+    background: white;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.header {
+    background: #f8fafc;
+    padding: 1.5rem;
+    text-align: center;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.subtitle {
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.body {
+    padding: 2rem 1.5rem;
+}
+
+.studentInfo {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.avatar {
+    width: 80px;
+    height: 80px;
+    background: #e0f2fe;
+    color: #0284c7;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-weight: bold;
+}
+
+.studentName {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.25rem;
+}
+
+.className {
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 500;
+    background: #f1f5f9;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    display: inline-block;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.timeInput {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #0f172a;
+    text-align: center;
+    border: none;
+    background: #f8fafc;
+    padding: 0.5rem 1rem;
+    border-radius: 16px;
+    width: 100%;
+    font-family: monospace;
+    letter-spacing: -2px;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.timeInput:focus {
+    background: #f0f9ff;
+    color: #0284c7;
+    box-shadow: 0 0 0 4px #e0f2fe;
+}
+
+.footer {
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    border-top: 1px solid #e2e8f0;
+    background: #fff;
+}
+
+.btnCancel {
+    padding: 0.875rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #64748b;
+    background: white;
+    border: 1px solid #cbd5e1;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btnCancel:hover {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.btnSubmit {
+    padding: 0.875rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    color: white;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btnSubmit:hover {
+    filter: brightness(110%);
+    transform: translateY(-1px);
+}
+
+.btnSubmit:active {
+    transform: translateY(1px);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px) scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}

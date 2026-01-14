@@ -60,6 +60,7 @@ CREATE TABLE records (
     rule_id UUID REFERENCES aspect_rules(id),
     point INTEGER NOT NULL,
     input_by UUID REFERENCES profiles(id),
+    notes TEXT,
     input_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

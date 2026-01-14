@@ -41,6 +41,9 @@ export async function updateSession(request: NextRequest) {
 }
 
 export async function middleware(request: NextRequest) {
+    if (request.nextUrl.pathname.startsWith('/dashboard/scan')) {
+        console.log('[Middleware] Request to:', request.nextUrl.pathname);
+    }
     return await updateSession(request)
 }
 

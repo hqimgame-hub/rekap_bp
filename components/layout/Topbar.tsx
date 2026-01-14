@@ -20,7 +20,7 @@ export function Topbar({ userEmail, role }: TopbarProps) {
         router.push('/login');
     };
 
-    const displayRole = role.replace('_', ' ').toUpperCase();
+    const displayRole = role === 'petugas_scan' ? 'PETUGAS ABSEN' : role.replace('_', ' ').toUpperCase();
 
     return (
         <header className={styles.topbar}>
