@@ -111,7 +111,9 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
                 <div className={styles.header}>
                     <div className={styles.logo}>Budaya Positif</div>
                     <div className={styles.schoolName}>SMPN 32 SBY</div>
-                    <div className={styles.roleBadge}>{role.toUpperCase()}</div>
+                    <div className={styles.roleBadge}>
+                        {role === 'kepsek' ? 'HALAMAN MONITORING' : role.toUpperCase().replace('_', ' ')}
+                    </div>
                 </div>
 
                 <nav className={styles.nav}>
