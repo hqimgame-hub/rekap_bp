@@ -13,7 +13,14 @@ interface Setting {
     description: string;
 }
 
-export default function SettingsClient({ initialSettings }: { initialSettings: Setting[] }) {
+export default function SettingsClient({
+    initialSettings,
+    role
+}: {
+    initialSettings: Setting[],
+    role: string
+}) {
+    const isAdmin = role === 'admin';
     const [settings, setSettings] = useState<Record<string, string>>(
         initialSettings.reduce((acc, curr) => ({ ...acc, [curr.key]: curr.value }), {})
     );
@@ -90,9 +97,15 @@ export default function SettingsClient({ initialSettings }: { initialSettings: S
                 </div>
 
                 <div className={styles.actions}>
-                    <Button type="submit" size="lg" isLoading={isLoading}>
-                        Simpan Perubahan
-                    </Button>
+                    {isAdmin ? (
+                        <Button type="submit" size="lg" isLoading={isLoading}>
+                            Simpan Perubahan
+                        </Button>
+                    ) : (
+                        <p className="text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200 text-sm">
+                            Hanya Admin yang dapat mengubah pengaturan sekolah.
+                        </p>
+                    )}
                 </div>
             </form>
 

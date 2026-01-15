@@ -16,10 +16,28 @@ export async function getSettings() {
 
 export async function updateSetting(key: string, value: string) {
     const supabase = await createClient();
+
+    // Check if user is admin
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Unauthenticated');
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') {
+        throw new Error('Unauthorized: Only Admin can change settings');
+    }
+
     const { error } = await supabase
         .from('settings')
-        .update({ value, updated_at: new Date().toISOString() })
-        .eq('key', key);
+        .upsert({
+            key,
+            value,
+            updated_at: new Date().toISOString()
+        });
 
     if (error) throw new Error(error.message);
 
@@ -30,11 +48,28 @@ export async function updateSetting(key: string, value: string) {
 export async function updateAllSettings(settings: Record<string, string>) {
     const supabase = await createClient();
 
+    // Check if user is admin
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Unauthenticated');
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') {
+        throw new Error('Unauthorized: Hanya Admin yang diperbolehkan mengubah pengaturan');
+    }
+
     for (const [key, value] of Object.entries(settings)) {
         const { error } = await supabase
             .from('settings')
-            .update({ value, updated_at: new Date().toISOString() })
-            .eq('key', key);
+            .upsert({
+                key,
+                value,
+                updated_at: new Date().toISOString()
+            });
 
         if (error) throw new Error(`Failed to update ${key}: ${error.message}`);
     }
