@@ -64,6 +64,7 @@ export default function SettingsClient({
                                     value={settings.school_start_time || '07:30'}
                                     onChange={(e) => handleChange('school_start_time', e.target.value)}
                                     required
+                                    disabled={!isAdmin}
                                 />
                             </div>
                         </div>
@@ -80,6 +81,7 @@ export default function SettingsClient({
                                     value={settings.late_penalty_minutes || '5'}
                                     onChange={(e) => handleChange('late_penalty_minutes', e.target.value)}
                                     required
+                                    disabled={!isAdmin}
                                 />
                             </div>
                             <div>
@@ -90,6 +92,7 @@ export default function SettingsClient({
                                     value={settings.late_penalty_points || '-1'}
                                     onChange={(e) => handleChange('late_penalty_points', e.target.value)}
                                     required
+                                    disabled={!isAdmin}
                                 />
                             </div>
                         </div>
@@ -109,10 +112,13 @@ export default function SettingsClient({
                 </div>
             </form>
 
-            <DeleteDataSection onSuccess={(text) => {
-                setMessage({ type: 'success', text });
-                setTimeout(() => setMessage(null), 3000);
-            }} />
+            <DeleteDataSection
+                isAdmin={isAdmin}
+                onSuccess={(text) => {
+                    setMessage({ type: 'success', text });
+                    setTimeout(() => setMessage(null), 3000);
+                }}
+            />
 
             {message && (
                 <div style={{
@@ -134,7 +140,7 @@ export default function SettingsClient({
     );
 }
 
-function DeleteDataSection({ onSuccess }: { onSuccess: (msg: string) => void }) {
+function DeleteDataSection({ isAdmin, onSuccess }: { isAdmin: boolean, onSuccess: (msg: string) => void }) {
     const [isOpen, setIsOpen] = useState(false);
     const [dataType, setDataType] = useState<'all' | 'attendance' | 'violations'>('attendance');
     const [dateRange, setDateRange] = useState('month'); // month, all, custom
@@ -233,7 +239,11 @@ function DeleteDataSection({ onSuccess }: { onSuccess: (msg: string) => void }) 
                     </div>
                 )}
 
-                {!isOpen ? (
+                {!isAdmin ? (
+                    <div className="p-4 bg-amber-50 rounded-lg border border-amber-200 text-amber-700 text-sm">
+                        Hanya Admin yang memiliki akses untuk menghapus database secara masal.
+                    </div>
+                ) : !isOpen ? (
                     <div className="flex justify-end">
                         <Button variant="danger" type="button" onClick={() => setIsOpen(true)}>
                             Mulai Penghapusan
