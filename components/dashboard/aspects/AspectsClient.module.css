@@ -2,29 +2,58 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .title {
     margin: 0;
-    font-size: 1.5rem;
+    font-size: 1.75rem;
+    font-weight: 700;
     color: var(--primary-color);
 }
 
+.aspectsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    align-items: start;
+}
+
 .aspectCard {
-    margin-bottom: 1.5rem;
+    background: var(--surface);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.aspectCard:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    border-color: var(--primary-light);
 }
 
 .aspectHeader {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.5rem;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem;
     background-color: var(--surface);
     border-bottom: 1px solid var(--border-color);
+}
+
+@media (min-width: 640px) {
+    .aspectHeader {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
 }
 
 .aspectTitle {
@@ -64,7 +93,8 @@
 }
 
 .aspectContent {
-    padding: 1.5rem;
+    flex: 1;
+    overflow-x: auto;
 }
 
 .rulesTable {
@@ -74,15 +104,22 @@
 
 .rulesTable th,
 .rulesTable td {
-    padding: 0.75rem;
+    padding: 0.875rem 1.25rem;
     text-align: left;
     border-bottom: 1px solid var(--border-color);
 }
 
 .rulesTable th {
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text-secondary);
-    font-size: 0.875rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.rulesTable tr:hover {
+    background-color: rgba(0, 0, 0, 0.01);
 }
 
 .rulesTable tr:last-child td {
@@ -90,47 +127,54 @@
 }
 
 .pointPositive {
-    color: #059669;
-    font-weight: 600;
+    color: #10b981;
+    font-weight: 700;
 }
 
 .pointNegative {
-    color: #dc2626;
-    font-weight: 600;
+    color: #ef4444;
+    font-weight: 700;
 }
 
 .actions {
     display: flex;
     gap: 0.5rem;
+    align-items: center;
 }
 
 .iconBtn {
     background: none;
-    border: none;
+    border: 1px solid transparent;
     cursor: pointer;
     color: var(--text-secondary);
-    padding: 4px;
-    border-radius: 4px;
+    padding: 6px;
+    border-radius: var(--radius-sm);
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .iconBtn:hover {
     color: var(--primary-color);
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: var(--primary-light);
+    border-color: rgba(var(--primary-rgb), 0.1);
 }
 
 .deleteBtn:hover {
     color: var(--danger-color);
+    background-color: #fee2e2;
+    border-color: #fecaca;
 }
 
 .formGroup {
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
 }
 
 .label {
     display: block;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
     margin-bottom: 0.5rem;
     color: var(--text-color);
 }
@@ -142,7 +186,7 @@
     border-radius: var(--radius-md);
     background-color: var(--surface);
     color: var(--text-color);
-    font-size: 1rem;
+    font-size: 0.875rem;
 }
 
 .select:focus {
@@ -153,7 +197,21 @@
 
 .emptyState {
     text-align: center;
-    padding: 2rem;
+    padding: 3rem 1rem;
     color: var(--text-secondary);
     font-style: italic;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: var(--radius-md);
+    margin: 1rem;
+}
+
+@media (max-width: 640px) {
+    .aspectsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .rulesTable th,
+    .rulesTable td {
+        padding: 0.75rem 1rem;
+    }
 }

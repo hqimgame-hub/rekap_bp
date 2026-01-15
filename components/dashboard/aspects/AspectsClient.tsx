@@ -136,13 +136,15 @@ export default function AspectsClient({ initialData }: { initialData: Aspect[] }
                 </Button>
             </div>
 
-            <div className="flex flex-col gap-6">
+            <div className={styles.aspectsGrid}>
                 {aspects.length === 0 && (
-                    <Card>
-                        <div className={styles.emptyState}>
-                            Belum ada aspek budaya positif yang ditambahkan.
-                        </div>
-                    </Card>
+                    <div className="col-span-full">
+                        <Card>
+                            <div className={styles.emptyState}>
+                                Belum ada aspek budaya positif yang ditambahkan.
+                            </div>
+                        </Card>
+                    </div>
                 )}
 
                 {aspects.map((aspect) => (
@@ -159,15 +161,17 @@ export default function AspectsClient({ initialData }: { initialData: Aspect[] }
                                 </span>
                             </div>
                             <div className={styles.actions}>
-                                <Button size="sm" variant="secondary" onClick={() => openRuleModal(aspect)}>
-                                    <ListPlus size={16} /> Tambah Aturan
+                                <Button size="sm" variant="secondary" onClick={() => openRuleModal(aspect)} className="whitespace-nowrap">
+                                    <ListPlus size={16} className="mr-1" /> Aturan
                                 </Button>
-                                <button className={styles.iconBtn} onClick={() => openAspectModal(aspect)} title="Edit Aspek">
-                                    <Edit size={18} />
-                                </button>
-                                <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={() => openDeleteModal('aspect', aspect)} title="Hapus Aspek">
-                                    <Trash2 size={18} />
-                                </button>
+                                <div className="flex gap-1">
+                                    <button className={styles.iconBtn} onClick={() => openAspectModal(aspect)} title="Edit Aspek">
+                                        <Edit size={18} />
+                                    </button>
+                                    <button className={`${styles.iconBtn} ${styles.deleteBtn}`} onClick={() => openDeleteModal('aspect', aspect)} title="Hapus Aspek">
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
