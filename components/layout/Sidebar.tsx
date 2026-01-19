@@ -55,7 +55,7 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
             label: 'Data Siswa',
             href: '/dashboard/students',
             icon: Users,
-            roles: ['admin', 'walas', 'kepsek']
+            roles: ['admin', 'walas']
         },
         {
             label: 'Aspek & Poin',
@@ -67,7 +67,7 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
             label: 'Catat Poin',
             href: '/dashboard/records',
             icon: ClipboardList,
-            roles: ['admin', 'petugas_input', 'kepsek']
+            roles: ['admin', 'petugas_input']
         },
         {
             label: 'Scan QR',
