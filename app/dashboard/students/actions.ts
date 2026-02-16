@@ -12,9 +12,44 @@ export async function getStudents() {
       classes (
         id,
         name
+      ),
+      records (
+        point
       )
     `)
         .order('created_at', { ascending: false });
+
+    if (error) throw new Error(error.message);
+
+    // Calculate total points for each student
+    const studentsWithPoints = data.map((student: any) => {
+        const totalPoints = student.records?.reduce((sum: number, record: any) => sum + record.point, 0) || 0;
+        // Remove records array to keep payload light, we only need the total
+        const { records, ...rest } = student;
+        return {
+            ...rest,
+            total_points: totalPoints
+        };
+    });
+
+    return studentsWithPoints;
+}
+
+export async function getStudentHistory(studentId: string) {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+        .from('records')
+        .select(`
+            id,
+            point,
+            notes,
+            input_date,
+            created_at,
+            aspect:aspects(name, type),
+            rule:aspect_rules(name)
+        `)
+        .eq('student_id', studentId)
+        .order('input_date', { ascending: false });
 
     if (error) throw new Error(error.message);
     return data;

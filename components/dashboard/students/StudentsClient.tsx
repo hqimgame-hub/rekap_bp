@@ -14,7 +14,8 @@ import { QRCodeModal } from './QRCodeModal';
 import QRCode from 'qrcode';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import styles from './StudentsClient.module.css';
-import { QrCode, FileText } from 'lucide-react';
+import { QrCode, FileText, History } from 'lucide-react';
+import { StudentHistoryModal } from './StudentHistoryModal';
 
 interface StudentData {
     id: string;
@@ -27,6 +28,7 @@ interface StudentData {
         name: string;
     };
     created_at: string;
+    total_points?: number;
 }
 
 interface ClassOption {
@@ -54,6 +56,7 @@ export default function StudentsClient({
     const [filterClass, setFilterClass] = useState('all');
     const [isQRModalOpen, setIsQRModalOpen] = useState(false);
     const [qrStudent, setQrStudent] = useState<StudentData | null>(null);
+    const [historyStudent, setHistoryStudent] = useState<StudentData | null>(null);
     const [isExporting, setIsExporting] = useState(false);
 
     // Filter Logic
@@ -384,6 +387,7 @@ export default function StudentsClient({
                             <TableHeader>Nama Siswa</TableHeader>
                             <TableHeader>JK</TableHeader>
                             <TableHeader>Kelas</TableHeader>
+                            <TableHeader>Total Poin</TableHeader>
                             {isAdmin && <TableHeader>Aksi</TableHeader>}
                         </TableRow>
                     </TableHead>
@@ -403,9 +407,24 @@ export default function StudentsClient({
                                 <TableCell>{item.name}</TableCell>
                                 <TableCell>{item.gender || '-'}</TableCell>
                                 <TableCell>{item.classes?.name || '-'}</TableCell>
+                                <TableCell>
+                                    <div className={`font-bold ${(item.total_points || 0) > 0 ? 'text-emerald-600' :
+                                            (item.total_points || 0) < 0 ? 'text-red-600' : 'text-slate-400'
+                                        }`}>
+                                        {(item.total_points || 0) > 0 ? '+' : ''}{item.total_points || 0}
+                                    </div>
+                                </TableCell>
                                 {isAdmin && (
                                     <TableCell>
                                         <div className={styles.actions}>
+                                            <button
+                                                onClick={() => setHistoryStudent(item)}
+                                                className={styles.iconBtn}
+                                                style={{ color: 'var(--primary-600)' }}
+                                                title="Lihat Riwayat"
+                                            >
+                                                <History size={18} />
+                                            </button>
                                             <button
                                                 onClick={() => { setQrStudent(item); setIsQRModalOpen(true); }}
                                                 className={styles.iconBtn}
@@ -521,6 +540,15 @@ export default function StudentsClient({
                     studentId={qrStudent.id}
                     studentName={qrStudent.name}
                     className={qrStudent.classes?.name || '-'}
+                />
+            )}
+            {/* History Modal */}
+            {historyStudent && (
+                <StudentHistoryModal
+                    isOpen={!!historyStudent}
+                    onClose={() => setHistoryStudent(null)}
+                    studentId={historyStudent.id}
+                    studentName={historyStudent.name}
                 />
             )}
         </div>
