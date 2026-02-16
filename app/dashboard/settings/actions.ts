@@ -104,7 +104,8 @@ export async function deleteData(
     const { data: aspect } = await supabase
         .from('aspects')
         .select('id')
-        .eq('name', 'Kehadiran')
+        .ilike('name', '%kehadiran%')
+        .limit(1)
         .single();
 
     const attendanceAspectId = aspect?.id;

@@ -64,7 +64,8 @@ export function AdminDashboard({ stats, role }: { stats: any, role?: string }) {
                     { title: 'Total Siswa', value: stats?.totalStudents, icon: '👥', color: '#3b82f6' },
                     { title: 'Total Kelas', value: stats?.totalClasses, icon: '🏫', color: '#8b5cf6' },
                     { title: 'Positif (Hari Ini)', value: stats?.pointsToday, icon: '📈', color: '#10b981' },
-                    { title: 'Negatif (Hari Ini)', value: stats?.negativePointsToday, icon: '📉', color: '#ef4444' }
+                    { title: 'Negatif (Hari Ini)', value: stats?.negativePointsToday, icon: '📉', color: '#ef4444' },
+                    { title: 'Terlambat (Hari Ini)', value: stats?.lateToday, icon: '⏰', color: '#f97316' }
                 ].map((card, i) => (
                     <div key={i} style={{
                         background: 'white',
@@ -196,6 +197,39 @@ export function AdminDashboard({ stats, role }: { stats: any, role?: string }) {
                     </ul>
                 </div>
             </div>
+
+            {/* List of Late Students (For Admin/Kepsek) */}
+            {
+                stats?.lateStudentsList && stats.lateStudentsList.length > 0 && (
+                    <div style={{ marginTop: '2rem', background: 'white', borderRadius: '16px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9' }}>
+                        <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1.25rem', color: '#334155', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            ⏰ Daftar Keterlambatan Hari Ini
+                        </h3>
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                                <thead>
+                                    <tr style={{ borderBottom: '2px solid #f1f5f9', textAlign: 'left' }}>
+                                        <th style={{ padding: '12px', color: '#64748b' }}>Nama Siswa</th>
+                                        <th style={{ padding: '12px', color: '#64748b' }}>Kelas</th>
+                                        <th style={{ padding: '12px', color: '#64748b' }}>Waktu Hadir</th>
+                                        <th style={{ padding: '12px', color: '#64748b' }}>Poin</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {stats.lateStudentsList.map((student: any, i: number) => (
+                                        <tr key={i} style={{ borderBottom: '1px solid #f8fafc' }}>
+                                            <td style={{ padding: '12px', fontWeight: '500', color: '#334155' }}>{student.name}</td>
+                                            <td style={{ padding: '12px', color: '#475569' }}>{student.className}</td>
+                                            <td style={{ padding: '12px', color: '#475569' }}>{student.time}</td>
+                                            <td style={{ padding: '12px', fontWeight: '600', color: '#ef4444' }}>{student.point}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )
+            }
         </div>
     );
 }

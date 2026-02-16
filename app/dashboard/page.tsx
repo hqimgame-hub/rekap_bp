@@ -61,6 +61,11 @@ export default async function DashboardPage() {
                             {stats?.negativePointsToday || 0}
                         </p>
                     </Card>
+                    <Card title="Siswa Terlambat (Hari Ini)" className="border-l-4 border-l-orange-500">
+                        <p style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#f97316', margin: '0.5rem 0' }}>
+                            {stats?.lateToday || 0}
+                        </p>
+                    </Card>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem' }}>
@@ -112,7 +117,38 @@ export default async function DashboardPage() {
                         </ul>
                     </div>
                 </div>
-            </div>
+
+                {/* List of Late Students (Specific for Walas to see who is late today) */}
+                {
+                    stats?.lateStudentsList && stats.lateStudentsList.length > 0 && (
+                        <div style={{ marginTop: '2rem', background: 'white', borderRadius: '16px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9' }}>
+                            <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1.25rem', color: '#334155', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                ⏰ Daftar Keterlambatan Hari Ini
+                            </h3>
+                            <div style={{ overflowX: 'auto' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                                    <thead>
+                                        <tr style={{ borderBottom: '2px solid #f1f5f9', textAlign: 'left' }}>
+                                            <th style={{ padding: '12px', color: '#64748b' }}>Nama Siswa</th>
+                                            <th style={{ padding: '12px', color: '#64748b' }}>Waktu Hadir</th>
+                                            <th style={{ padding: '12px', color: '#64748b' }}>Poin</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {stats.lateStudentsList.map((student: any, i: number) => (
+                                            <tr key={i} style={{ borderBottom: '1px solid #f8fafc' }}>
+                                                <td style={{ padding: '12px', fontWeight: '500', color: '#334155' }}>{student.name}</td>
+                                                <td style={{ padding: '12px', color: '#475569' }}>{student.time}</td>
+                                                <td style={{ padding: '12px', fontWeight: '600', color: '#ef4444' }}>{student.point}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )
+                }
+            </div >
         );
     }
 

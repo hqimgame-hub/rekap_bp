@@ -14,6 +14,7 @@ interface ClassOption {
 interface Record {
     id: string;
     point: number;
+    notes?: string;
     input_date: string;
     created_at: string;
     student: { id: string; name: string; gender: string; nisn?: string | null };
@@ -23,7 +24,8 @@ interface Record {
 }
 
 export default function ReportsClient({ classes }: { classes: ClassOption[] }) {
-    const [records, setRecords] = useState<Record[]>([]);
+    const [rawRecords, setRawRecords] = useState<Record[]>([]); // Store original data from server
+    const [records, setRecords] = useState<Record[]>([]); // Store filtered data for display
     const [isLoading, setIsLoading] = useState(true);
 
     // Filters
@@ -31,6 +33,8 @@ export default function ReportsClient({ classes }: { classes: ClassOption[] }) {
     const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
     const [classId, setClassId] = useState('');
     const [type, setType] = useState<string>('');
+    const [category, setCategory] = useState<string>('all'); // 'all', 'lateness', 'general'
+
 
     const fetchData = useCallback(async () => {
         setIsLoading(true);
@@ -42,13 +46,50 @@ export default function ReportsClient({ classes }: { classes: ClassOption[] }) {
                 type: type as any || undefined
             };
             const data = await getRecords(filter);
-            setRecords(data as any || []);
+            setRawRecords(data as any || []); // Only set raw data
         } catch (error) {
             console.error(error);
             alert('Gagal mengambil data laporan');
         }
         setIsLoading(false);
     }, [startDate, endDate, classId, type]);
+
+    // Apply client-side filter whenever category or raw data (fetch result) changes
+    useEffect(() => {
+        let filteredData = [...rawRecords];
+
+        if (category === 'lateness') {
+            filteredData = filteredData.filter((r: any) => {
+                const aspectName = (r.aspect?.name || '').toLowerCase();
+                const ruleName = (r.rule?.name || '').toLowerCase();
+                const notes = (r.notes || '').toLowerCase();
+
+                return aspectName.includes('kehadiran') ||
+                    aspectName.includes('terlambat') ||
+                    aspectName.includes('keterlambatan') ||
+                    ruleName.includes('terlambat') ||
+                    notes.includes('terlambat');
+            });
+        } else if (category === 'general') {
+            filteredData = filteredData.filter((r: any) => {
+                const aspectName = (r.aspect?.name || '').toLowerCase();
+                const ruleName = (r.rule?.name || '').toLowerCase();
+                const notes = (r.notes || '').toLowerCase();
+
+                const isLateness = aspectName.includes('kehadiran') ||
+                    aspectName.includes('terlambat') ||
+                    aspectName.includes('keterlambatan') ||
+                    ruleName.includes('terlambat') ||
+                    notes.includes('terlambat');
+
+                return !isLateness;
+            });
+        }
+
+        setRecords(filteredData);
+    }, [category, rawRecords]);
+
+
 
     // Initial fetch
     useEffect(() => {
@@ -156,6 +197,18 @@ export default function ReportsClient({ classes }: { classes: ClassOption[] }) {
                             <option value="">Semua Tipe</option>
                             <option value="positive">Positif (+)</option>
                             <option value="negative">Negatif (-)</option>
+                        </select>
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Kategori</label>
+                        <select
+                            className={styles.select}
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                        >
+                            <option value="all">Semua Kategori</option>
+                            <option value="lateness">Keterlambatan</option>
+                            <option value="general">Pelanggaran Umum</option>
                         </select>
                     </div>
                     <div>

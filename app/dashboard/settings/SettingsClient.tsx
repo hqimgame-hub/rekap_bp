@@ -159,15 +159,25 @@ function DeleteDataSection({ isAdmin, onSuccess }: { isAdmin: boolean, onSuccess
 
             if (dateRange === 'month') {
                 const now = new Date();
+                // Helper to format date as YYYY-MM-DD in LOCAL time
+                const toLocalISO = (d: Date) => {
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                };
+
                 // Start of month
                 const startObj = new Date(now.getFullYear(), now.getMonth(), 1);
-                // Adjust for timezone offset if strictly needed, but ISO string usually fine for 'YYYY-MM-DD' comparison if DB stores date only.
-                // However, our DB stores `input_date` as DATE (likely).
-                // So ISO string YYYY-MM-DDT... matches.
-                start = startObj.toISOString().split('T')[0];
+                start = toLocalISO(startObj);
 
+                // End of month (last day of current month)
                 const endObj = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-                end = endObj.toISOString().split('T')[0];
+                end = toLocalISO(endObj);
+            } else if (dateRange === 'all') {
+                // No start/end date filter
+                start = undefined;
+                end = undefined;
             } else if (dateRange === 'custom') {
                 start = startDate;
                 end = endDate;

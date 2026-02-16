@@ -12,6 +12,8 @@ export interface DashboardStats {
     violationByAspect?: { name: string; points: number }[];
     topStudentsPositive?: { name: string; points: number }[];
     topStudentsNegative?: { name: string; points: number }[];
+    lateToday: number;
+    lateStudentsList?: { name: string; className: string; time: string; point: number }[];
 }
 
 export async function getDashboardStats(): Promise<DashboardStats | null> {
@@ -35,7 +37,9 @@ export async function getDashboardStats(): Promise<DashboardStats | null> {
         totalStudents: 0,
         totalClasses: 0,
         pointsToday: 0,
-        negativePointsToday: 0
+        negativePointsToday: 0,
+        lateToday: 0,
+        lateStudentsList: []
     };
 
     // 1. Total Students
@@ -171,6 +175,46 @@ export async function getDashboardStats(): Promise<DashboardStats | null> {
             .map(([name, points]) => ({ name, points }))
             .sort((a, b) => b.points - a.points)
             .slice(0, 5);
+    }
+
+    // 7. Lateness Statistics (Specific Logic for Late Students)
+    // Criteria: Aspect is 'Kehadiran' AND (Point < 0 OR Notes contains "Terlambat")
+    let latenessQuery = supabase
+        .from('records')
+        .select('point, notes, input_date, student:students(name, class:classes(name)), aspect:aspects(name)')
+        .gte('input_date', today.toISOString())
+        .not('student_id', 'is', null);
+
+    if (role === 'walas' && classId) {
+        latenessQuery = latenessQuery.eq('class_id', classId);
+    }
+
+    // We fetch all records for today first to filter in memory for complex logic (OR condition on joined table is tricky)
+    const { data: potentialLateData } = await latenessQuery;
+
+    if (potentialLateData) {
+        const lateRecords = potentialLateData.filter((r: any) => {
+            const aspectName = r.aspect?.name || '';
+            const isAttendance = aspectName === 'Kehadiran' || aspectName === 'Keterlambatan';
+            const isLate = r.point < 0 || (r.notes && r.notes.toLowerCase().includes('terlambat'));
+            return isAttendance && isLate;
+        });
+
+        stats.lateToday = lateRecords.length;
+
+        // Populate list
+        stats.lateStudentsList = lateRecords.map((r: any) => {
+            let time = '-';
+            const timeMatch = r.notes?.match(/jam\s+(\d{2}:\d{2})/i);
+            if (timeMatch) time = timeMatch[1];
+
+            return {
+                name: r.student?.name || 'Unknown',
+                className: ((r.student as any)?.class?.name) || '-',
+                time: time,
+                point: r.point
+            };
+        });
     }
 
     return stats;

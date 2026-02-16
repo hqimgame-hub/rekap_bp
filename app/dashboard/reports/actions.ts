@@ -17,6 +17,7 @@ export async function getRecords(filters: RecordsFilter = {}) {
         .select(`
             id,
             point,
+            notes,
             input_date,
             created_at,
             student:students!inner(id, name, gender, nisn),
