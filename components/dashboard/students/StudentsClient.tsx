@@ -408,9 +408,13 @@ export default function StudentsClient({
                                 <TableCell>{item.gender || '-'}</TableCell>
                                 <TableCell>{item.classes?.name || '-'}</TableCell>
                                 <TableCell>
-                                    <div className={`font-bold ${(item.total_points || 0) > 0 ? 'text-emerald-600' :
-                                            (item.total_points || 0) < 0 ? 'text-red-600' : 'text-slate-400'
-                                        }`}>
+                                    <div
+                                        onClick={() => setHistoryStudent(item)}
+                                        className={`font-bold cursor-pointer hover:opacity-80 transition-opacity ${(item.total_points || 0) > 0 ? 'text-emerald-600' :
+                                                (item.total_points || 0) < 0 ? 'text-red-600' : 'text-slate-400'
+                                            }`}
+                                        title="Klik untuk melihat riwayat"
+                                    >
                                         {(item.total_points || 0) > 0 ? '+' : ''}{item.total_points || 0}
                                     </div>
                                 </TableCell>
