@@ -410,12 +410,15 @@ export default function StudentsClient({
                                 <TableCell>
                                     <div
                                         onClick={() => setHistoryStudent(item)}
-                                        className={`font-bold cursor-pointer hover:opacity-80 transition-opacity ${(item.total_points || 0) > 0 ? 'text-emerald-600' :
+                                        className={`font-bold cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1 ${(item.total_points || 0) > 0 ? 'text-emerald-600' :
                                                 (item.total_points || 0) < 0 ? 'text-red-600' : 'text-slate-400'
                                             }`}
                                         title="Klik untuk melihat riwayat"
                                     >
-                                        {(item.total_points || 0) > 0 ? '+' : ''}{item.total_points || 0}
+                                        <span className="underline decoration-dotted underline-offset-4">
+                                            {(item.total_points || 0) > 0 ? '+' : ''}{item.total_points || 0}
+                                        </span>
+                                        <History size={14} className="opacity-50" />
                                     </div>
                                 </TableCell>
                                 {isAdmin && (
