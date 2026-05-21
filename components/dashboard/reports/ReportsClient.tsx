@@ -20,7 +20,7 @@ interface Record {
     student: { id: string; name: string; gender: string; nisn?: string | null };
     class: { id: string; name: string };
     aspect: { id: string; name: string; type: string };
-    rule: { id: string; name: string };
+    rule?: { id: string; name: string } | null;
 }
 
 export default function ReportsClient({ classes }: { classes: ClassOption[] }) {
@@ -118,7 +118,7 @@ export default function ReportsClient({ classes }: { classes: ClassOption[] }) {
                         <Download size={16} /> Export Excel
                     </Button>
                     <Button
-                        variant="secondary"
+                        variant="primary"
                         size="sm"
                         disabled={!classId}
                         onClick={async () => {
@@ -137,9 +137,14 @@ export default function ReportsClient({ classes }: { classes: ClassOption[] }) {
                                 if (!res.ok) throw new Error('Gagal mengunduh PDF');
                                 const blob = await res.blob();
                                 const url = window.URL.createObjectURL(blob);
+                                const selectedClass = classes.find(c => c.id === classId);
+                                const classNameClean = selectedClass ? selectedClass.name.replace(/[^a-zA-Z0-9]/g, '_') : 'Kelas';
+                                const d = new Date();
+                                const dateStr = `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+                                
                                 const a = document.createElement('a');
                                 a.href = url;
-                                a.download = `Laporan_Poin_Kelas_${classId}.pdf`;
+                                a.download = `Laporan_Poin_${classNameClean}_${dateStr}.pdf`;
                                 a.click();
                                 window.URL.revokeObjectURL(url);
                             } catch (e: any) {
@@ -274,7 +279,7 @@ export default function ReportsClient({ classes }: { classes: ClassOption[] }) {
                                             {record.aspect.name}
                                         </span>
                                     </td>
-                                    <td>{record.rule.name}</td>
+                                    <td>{record.rule?.name || '-'}</td>
                                     <td className={`text-right font-bold ${record.point > 0 ? 'text-emerald-600' : 'text-red-600'
                                         }`}>
                                         {record.point > 0 ? '+' : ''}{record.point}
