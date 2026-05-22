@@ -4,8 +4,18 @@ import { AdminDashboard } from '@/components/dashboard/AdminDashboard';
 import { Card } from '@/components/ui/Card';
 import { getDashboardStats } from './actions';
 import { redirect } from 'next/navigation';
+import { getJakartaDateString } from '@/lib/utils/timezone';
+import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+    searchParams
+}: {
+    searchParams: Promise<{ startDate?: string; endDate?: string }>;
+}) {
+    const resolvedParams = await searchParams;
+    const startDate = resolvedParams.startDate || getJakartaDateString();
+    const endDate = resolvedParams.endDate || getJakartaDateString();
+
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -31,10 +41,10 @@ export default async function DashboardPage() {
         redirect('/dashboard/records');
     }
 
-    const stats = await getDashboardStats();
+    const stats = await getDashboardStats({ startDate, endDate });
 
     if (role === 'admin' || role === 'kepsek') {
-        return <AdminDashboard stats={stats} role={role} />;
+        return <AdminDashboard stats={stats} role={role} startDate={startDate} endDate={endDate} />;
     }
 
     if (role === 'walas') {
@@ -44,6 +54,8 @@ export default async function DashboardPage() {
             <div style={{ paddingBottom: '2rem' }}>
                 <h1 className="text-2xl font-black mb-1">Dashboard Wali Kelas</h1>
                 <p className="text-slate-500 font-medium mb-6">Selamat datang, {profile.name} (Wali Kelas {(profile as any).class?.name || '-'})</p>
+
+                <DashboardFilters initialStartDate={startDate} initialEndDate={endDate} />
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
                     <Card title="Siswa di Kelas" className="border-l-4 border-l-blue-500">

@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { getJakartaDayBounds } from '@/lib/utils/timezone';
 import fs from 'fs';
 import path from 'path';
 
@@ -34,14 +35,13 @@ export async function getRecords(filters: RecordsFilter = {}) {
     }
 
     if (filters.startDate) {
-        query = query.gte('input_date', filters.startDate);
+        const bounds = getJakartaDayBounds(filters.startDate);
+        query = query.gte('input_date', bounds.start);
     }
 
     if (filters.endDate) {
-        // Add time to end date to include the full day
-        const endDateTime = new Date(filters.endDate);
-        endDateTime.setHours(23, 59, 59, 999);
-        query = query.lte('input_date', endDateTime.toISOString());
+        const bounds = getJakartaDayBounds(filters.endDate);
+        query = query.lte('input_date', bounds.end);
     }
 
     if (filters.type) {

@@ -4,8 +4,19 @@ import { Card } from '@/components/ui/Card';
 import * as XLSX from 'xlsx';
 import { FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { DashboardFilters } from './DashboardFilters';
 
-export function AdminDashboard({ stats, role }: { stats: any, role?: string }) {
+export function AdminDashboard({
+    stats,
+    role,
+    startDate,
+    endDate
+}: {
+    stats: any;
+    role?: string;
+    startDate: string;
+    endDate: string;
+}) {
     const maxViolation = Math.max(...(stats?.violationByAspect?.map((a: any) => a.points) || [1]));
 
     const handleExportRankings = () => {
@@ -52,6 +63,8 @@ export function AdminDashboard({ stats, role }: { stats: any, role?: string }) {
                     </div>
                 </div>
             </div>
+
+            <DashboardFilters initialStartDate={startDate} initialEndDate={endDate} />
 
             {/* Compact Summary Cards */}
             <div style={{

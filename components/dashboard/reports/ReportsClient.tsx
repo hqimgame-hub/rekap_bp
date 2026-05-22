@@ -5,6 +5,8 @@ import { getRecords, RecordsFilter } from '@/app/dashboard/reports/actions';
 import { Button } from '@/components/ui/Button';
 import { FileText, Filter, Download } from 'lucide-react';
 import styles from './ReportsClient.module.css';
+import { getJakartaDateString } from '@/lib/utils/timezone';
+import { isRecordLate } from '@/lib/utils/lateness';
 
 interface ClassOption {
     id: string;
@@ -29,8 +31,8 @@ export default function ReportsClient({ classes }: { classes: ClassOption[] }) {
     const [isLoading, setIsLoading] = useState(true);
 
     // Filters
-    const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]); // Default today
-    const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
+    const [startDate, setStartDate] = useState(getJakartaDateString()); // Default today (WIB)
+    const [endDate, setEndDate] = useState(getJakartaDateString());
     const [classId, setClassId] = useState('');
     const [type, setType] = useState<string>('');
     const [category, setCategory] = useState<string>('all'); // 'all', 'lateness', 'general'
@@ -59,31 +61,9 @@ export default function ReportsClient({ classes }: { classes: ClassOption[] }) {
         let filteredData = [...rawRecords];
 
         if (category === 'lateness') {
-            filteredData = filteredData.filter((r: any) => {
-                const aspectName = (r.aspect?.name || '').toLowerCase();
-                const ruleName = (r.rule?.name || '').toLowerCase();
-                const notes = (r.notes || '').toLowerCase();
-
-                return aspectName.includes('kehadiran') ||
-                    aspectName.includes('terlambat') ||
-                    aspectName.includes('keterlambatan') ||
-                    ruleName.includes('terlambat') ||
-                    notes.includes('terlambat');
-            });
+            filteredData = filteredData.filter((r: any) => isRecordLate(r));
         } else if (category === 'general') {
-            filteredData = filteredData.filter((r: any) => {
-                const aspectName = (r.aspect?.name || '').toLowerCase();
-                const ruleName = (r.rule?.name || '').toLowerCase();
-                const notes = (r.notes || '').toLowerCase();
-
-                const isLateness = aspectName.includes('kehadiran') ||
-                    aspectName.includes('terlambat') ||
-                    aspectName.includes('keterlambatan') ||
-                    ruleName.includes('terlambat') ||
-                    notes.includes('terlambat');
-
-                return !isLateness;
-            });
+            filteredData = filteredData.filter((r: any) => !isRecordLate(r));
         }
 
         setRecords(filteredData);

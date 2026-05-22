@@ -1,6 +1,8 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { getJakartaDateString, getJakartaDayBounds } from '@/lib/utils/timezone';
+import { isRecordLate } from '@/lib/utils/lateness';
 
 export interface DashboardStats {
     totalStudents: number;
@@ -16,7 +18,7 @@ export interface DashboardStats {
     lateStudentsList?: { name: string; className: string; time: string; point: number }[];
 }
 
-export async function getDashboardStats(): Promise<DashboardStats | null> {
+export async function getDashboardStats(filters?: { startDate?: string; endDate?: string }): Promise<DashboardStats | null> {
     const supabase = await createClient();
 
     // Get current user role
@@ -42,7 +44,15 @@ export async function getDashboardStats(): Promise<DashboardStats | null> {
         lateStudentsList: []
     };
 
-    // 1. Total Students
+    // Calculate UTC boundaries based on local WIB dates
+    const startStr = filters?.startDate || getJakartaDateString();
+    const endStr = filters?.endDate || getJakartaDateString();
+    const bounds = {
+        start: getJakartaDayBounds(startStr).start,
+        end: getJakartaDayBounds(endStr).end
+    };
+
+    // 1. Total Students (All-time static value)
     let studentsQuery = supabase.from('students').select('*', { count: 'exact', head: true });
     if (role === 'walas' && classId) {
         studentsQuery = studentsQuery.eq('class_id', classId);
@@ -50,24 +60,26 @@ export async function getDashboardStats(): Promise<DashboardStats | null> {
     const { count: studentCount } = await studentsQuery;
     stats.totalStudents = studentCount || 0;
 
-    // 2. Total Classes
+    // 2. Total Classes (All-time static value)
     if (role === 'admin' || role === 'kepsek') {
         const { count: classCount } = await supabase.from('classes').select('*', { count: 'exact', head: true });
         stats.totalClasses = classCount || 0;
     }
 
-    // 3. Points Today
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    let recordsQuery = supabase.from('records').select('point', { count: 'exact' }).gte('input_date', today.toISOString());
+    // 3. Points in Period
+    let recordsQuery = supabase.from('records')
+        .select('point')
+        .gte('input_date', bounds.start)
+        .lte('input_date', bounds.end);
+        
     if (role === 'walas' && classId) {
         recordsQuery = recordsQuery.eq('class_id', classId);
     }
     const { data: recordsData } = await recordsQuery;
     if (recordsData) {
-        stats.pointsToday = recordsData.filter(r => r.point > 0).length;
-        stats.negativePointsToday = recordsData.filter(r => r.point < 0).length;
+        // Change from .length (count) to .reduce (sum of points)
+        stats.pointsToday = recordsData.filter(r => r.point > 0).reduce((sum, r) => sum + r.point, 0);
+        stats.negativePointsToday = recordsData.filter(r => r.point < 0).reduce((sum, r) => sum + r.point, 0);
     }
 
     // 4. Class Rankings (Top Positive & Top Negative)
@@ -75,7 +87,9 @@ export async function getDashboardStats(): Promise<DashboardStats | null> {
         const { data: classStats } = await supabase
             .from('records')
             .select('point, class:classes(name)')
-            .not('class_id', 'is', null);
+            .not('class_id', 'is', null)
+            .gte('input_date', bounds.start)
+            .lte('input_date', bounds.end);
 
         if (classStats) {
             const classMap = new Map();
@@ -100,7 +114,9 @@ export async function getDashboardStats(): Promise<DashboardStats | null> {
             .from('records')
             .select('point, aspect:aspects(name)')
             .lt('point', 0)
-            .not('aspect_id', 'is', null);
+            .not('aspect_id', 'is', null)
+            .gte('input_date', bounds.start)
+            .lte('input_date', bounds.end);
 
         if (violationStats) {
             const aspectMap = new Map();
@@ -117,7 +133,9 @@ export async function getDashboardStats(): Promise<DashboardStats | null> {
         const { data: studentStats } = await supabase
             .from('records')
             .select('point, student:students(name)')
-            .not('student_id', 'is', null);
+            .not('student_id', 'is', null)
+            .gte('input_date', bounds.start)
+            .lte('input_date', bounds.end);
 
         if (studentStats) {
             const studentMap = new Map();
@@ -147,7 +165,9 @@ export async function getDashboardStats(): Promise<DashboardStats | null> {
             .from('records')
             .select('point, aspect:aspects(name)')
             .eq('class_id', classId)
-            .lt('point', 0);
+            .lt('point', 0)
+            .gte('input_date', bounds.start)
+            .lte('input_date', bounds.end);
 
         const aspectMap = new Map();
         (vByAspect || []).forEach((r: any) => {
@@ -164,7 +184,9 @@ export async function getDashboardStats(): Promise<DashboardStats | null> {
             .from('records')
             .select('point, student:students(name)')
             .eq('class_id', classId)
-            .lt('point', 0);
+            .lt('point', 0)
+            .gte('input_date', bounds.start)
+            .lte('input_date', bounds.end);
 
         const studentMap = new Map();
         (vByStudent || []).forEach((r: any) => {
@@ -178,27 +200,20 @@ export async function getDashboardStats(): Promise<DashboardStats | null> {
     }
 
     // 7. Lateness Statistics (Specific Logic for Late Students)
-    // Criteria: Aspect is 'Kehadiran' AND (Point < 0 OR Notes contains "Terlambat")
     let latenessQuery = supabase
         .from('records')
-        .select('point, notes, input_date, student:students(name, class:classes(name)), aspect:aspects(name)')
-        .gte('input_date', today.toISOString())
+        .select('point, notes, input_date, student:students(name, class:classes(name)), aspect:aspects(name), rule:aspect_rules(name)')
+        .gte('input_date', bounds.start)
+        .lte('input_date', bounds.end)
         .not('student_id', 'is', null);
 
     if (role === 'walas' && classId) {
         latenessQuery = latenessQuery.eq('class_id', classId);
     }
-
-    // We fetch all records for today first to filter in memory for complex logic (OR condition on joined table is tricky)
     const { data: potentialLateData } = await latenessQuery;
 
     if (potentialLateData) {
-        const lateRecords = potentialLateData.filter((r: any) => {
-            const aspectName = r.aspect?.name || '';
-            const isAttendance = aspectName === 'Kehadiran' || aspectName === 'Keterlambatan';
-            const isLate = r.point < 0 || (r.notes && r.notes.toLowerCase().includes('terlambat'));
-            return isAttendance && isLate;
-        });
+        const lateRecords = potentialLateData.filter((r: any) => isRecordLate(r));
 
         stats.lateToday = lateRecords.length;
 
@@ -219,3 +234,4 @@ export async function getDashboardStats(): Promise<DashboardStats | null> {
 
     return stats;
 }
+
