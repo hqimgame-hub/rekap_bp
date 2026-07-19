@@ -142,6 +142,28 @@ export default function StudentsClient({
         XLSX.writeFile(wb, 'template_siswa.xlsx');
     };
 
+    const downloadDataSiswa = () => {
+        // Create rows from existing students in initialData
+        const wsData = [
+            ['NISN', 'Nama Lengkap', 'Jenis Kelamin (L/P)', 'Nama Kelas', 'ID Siswa (Jangan Diubah)'],
+            ...initialData.map(student => [
+                student.nisn || '',
+                student.name,
+                student.gender || 'L',
+                student.classes?.name || '',
+                student.id
+            ])
+        ];
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+        // Create a workbook
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Data Siswa');
+
+        // Generate Excel file and trigger download
+        XLSX.writeFile(wb, 'data_siswa.xlsx');
+    };
+
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -163,6 +185,7 @@ export default function StudentsClient({
                     const name = row[1];
                     const gender = row[2];
                     const className = row[3];
+                    const id = row[4] ? row[4].toString().trim() : undefined;
 
                     if (!name || !className) return null;
 
@@ -172,12 +195,13 @@ export default function StudentsClient({
                     if (!matchedClass) return null;
 
                     return {
+                        id: id || undefined,
                         nisn,
                         name,
                         gender: gender || 'L',
                         class_id: matchedClass.id
                     };
-                }).filter(s => s !== null) as { nisn: string | null; name: string; class_id: string; gender: string }[];
+                }).filter(s => s !== null) as { id?: string; nisn: string | null; name: string; class_id: string; gender: string }[];
 
                 if (studentsToImport.length === 0) {
                     alert('Tidak ada data valid yang ditemukan. Pastikan nama kelas sesuai dengan data di sistem.');
@@ -319,6 +343,9 @@ export default function StudentsClient({
                         </Button>
                         <Button variant="success" onClick={downloadTemplate} title="Download Template Excel">
                             Download Template
+                        </Button>
+                        <Button variant="success" onClick={downloadDataSiswa} title="Download Data Siswa Excel">
+                            Download Data Siswa
                         </Button>
                         <div>
                             <input

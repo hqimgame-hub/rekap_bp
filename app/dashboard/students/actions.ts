@@ -116,12 +116,61 @@ export async function bulkDeleteStudents(ids: string[]) {
     return { success: true };
 }
 
-export async function importStudents(students: { nisn: string | null; name: string; class_id: string; gender: string }[]) {
+export async function importStudents(students: { id?: string; nisn: string | null; name: string; class_id: string; gender: string }[]) {
     const supabase = await createClient();
 
+    // 1. Get unique class IDs to query existing students in those classes
+    const classIds = Array.from(new Set(students.map(s => s.class_id)));
+
+    // 2. Fetch existing students in those classes to match by name
+    const { data: existingStudents, error: fetchError } = await supabase
+        .from('students')
+        .select('id, name, class_id')
+        .in('class_id', classIds);
+
+    if (fetchError) return { error: fetchError.message };
+
+    // 3. Create a lookup map: key is "name_classid" in lowercase
+    const lookup = new Map<string, string>();
+    if (existingStudents) {
+        for (const s of existingStudents) {
+            const key = `${s.name.toLowerCase().trim()}_${s.class_id}`;
+            lookup.set(key, s.id);
+        }
+    }
+
+    // 4. Build upsert payload
+    const upsertData = students.map(student => {
+        let studentId = student.id;
+
+        // If no ID is provided, try to match by name and class
+        if (!studentId) {
+            const key = `${student.name.toLowerCase().trim()}_${student.class_id}`;
+            studentId = lookup.get(key);
+        }
+
+        if (studentId) {
+            return {
+                id: studentId,
+                name: student.name,
+                class_id: student.class_id,
+                nisn: student.nisn,
+                gender: student.gender
+            };
+        } else {
+            return {
+                name: student.name,
+                class_id: student.class_id,
+                nisn: student.nisn,
+                gender: student.gender
+            };
+        }
+    });
+
+    // 5. Execute upsert
     const { error } = await supabase
         .from('students')
-        .insert(students);
+        .upsert(upsertData);
 
     if (error) return { error: error.message };
 
