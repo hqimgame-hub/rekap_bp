@@ -344,7 +344,7 @@ export default function StudentsClient({
                         <Button variant="success" onClick={downloadTemplate} title="Download Template Excel">
                             Download Template
                         </Button>
-                        <Button variant="success" onClick={downloadDataSiswa} title="Download Data Siswa Excel">
+                        <Button className={styles.btnDownloadData} onClick={downloadDataSiswa} title="Download Data Siswa Excel">
                             Download Data Siswa
                         </Button>
                         <div>
